@@ -1,0 +1,7 @@
+# Workspace pnpm/Turborepo — couvre uniquement le code TypeScript.
+# services/* est en Python (FastAPI), géré indépendamment (pyproject.toml
+# par service, à partir de Sprint F1) : ce n'est pas un oubli, c'est un
+# monorepo multi-langage volontaire (voir ADR-0001).
+packages:
+  - "apps/*"
+  - "packages/*"

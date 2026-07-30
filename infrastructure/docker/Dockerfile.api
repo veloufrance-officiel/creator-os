@@ -1,0 +1,16 @@
+# Dockerfile.api — squelette, à compléter en Sprint F1 avec apps/api réel.
+# Ne pas construire tel quel : apps/api ne contient pas encore de code
+# applicatif (voir apps/api/README.md). Ce fichier fixe l'intention de
+# structure (multi-stage, image slim) pour que le premier code ajouté en F1
+# ait un Dockerfile à compléter plutôt qu'à inventer.
+
+FROM python:3.13-slim AS base
+WORKDIR /app
+
+# TODO (Sprint F1) :
+#   COPY apps/api/pyproject.toml services/identity/pyproject.toml ... .
+#   RUN pip install --no-cache-dir .
+#   COPY apps/api apps/api
+#   COPY services services
+#   COPY packages/security packages/security
+#   CMD ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

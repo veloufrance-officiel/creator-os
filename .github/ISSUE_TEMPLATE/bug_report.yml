@@ -1,0 +1,44 @@
+name: 🐛 Bug
+description: Signaler un comportement incorrect
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Qu'observez-vous, et qu'attendiez-vous ?
+    validations:
+      required: true
+  - type: dropdown
+    id: service
+    attributes:
+      label: Service concerné
+      options:
+        - apps/web
+        - apps/api
+        - apps/admin
+        - services/identity
+        - services/creator
+        - services/media
+        - services/connector
+        - services/ai
+        - services/memory
+        - services/billing
+        - services/quota
+        - services/analytics
+        - services/security
+        - infrastructure
+        - autre / non applicable
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Étapes de reproduction
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Sévérité perçue, utilisateurs affectés

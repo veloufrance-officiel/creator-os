@@ -1,0 +1,17 @@
+{
+  "name": "creator-os",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Creator OS — Operating System for Creators",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "structure-check": "python3 scripts/check_structure.py"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=24"
+  }
+}

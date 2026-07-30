@@ -1,0 +1,14 @@
+# Dockerfile.web — squelette, à compléter en Sprint F1/F2 avec apps/web réel.
+# Ne pas construire tel quel : apps/web ne contient pas encore de code
+# applicatif (voir apps/web/README.md).
+
+FROM node:24-alpine AS base
+WORKDIR /app
+
+# TODO (Sprint F1/F2) :
+#   COPY package.json pnpm-workspace.yaml turbo.json .
+#   COPY apps/web apps/web
+#   COPY packages packages
+#   RUN corepack enable && pnpm install --frozen-lockfile
+#   RUN pnpm turbo run build --filter=web
+#   CMD ["pnpm", "--filter", "web", "start"]

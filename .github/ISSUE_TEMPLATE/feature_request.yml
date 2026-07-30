@@ -1,0 +1,22 @@
+name: ✨ Fonctionnalité
+description: Proposer une nouvelle fonctionnalité ou amélioration
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Quel problème cela résout-il ?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+    validations:
+      required: true
+  - type: checkboxes
+    id: adr
+    attributes:
+      label: Impact architecture
+      options:
+        - label: Cette demande introduit potentiellement une dépendance, change une frontière de service, ou touche sécurité/RGPD — un ADR sera probablement nécessaire (voir CONTRIBUTING.md)

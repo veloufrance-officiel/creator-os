@@ -1,0 +1,9 @@
+# CODEOWNERS — placeholder, à remplacer par les vrais handles GitHub de l'équipe.
+# https://docs.github.com/articles/about-code-owners
+
+*                     @veloufrance-officiel/core-team
+/services/identity/   @veloufrance-officiel/core-team
+/services/security/   @veloufrance-officiel/core-team
+/packages/security/   @veloufrance-officiel/core-team
+/infrastructure/      @veloufrance-officiel/core-team
+/docs/adr/            @veloufrance-officiel/core-team
