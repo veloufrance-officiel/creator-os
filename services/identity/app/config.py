@@ -6,9 +6,19 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str = "postgresql+asyncpg://creator_os:local_dev_only@localhost:5432/creator_os"
-    jwt_secret: str = "changeme-in-env-never-use-default-in-production"
     access_token_ttl_minutes: int = 15
     refresh_token_ttl_days: int = 7
+
+    # RS256 (ADR-0008). Vide en dev = paire générée en mémoire au démarrage (non
+    # persistante, jamais utiliser cette voie en production — voir SECURITY.md).
+    jwt_private_key_pem: str = ""
+    jwt_public_key_pem: str = ""
+    jwt_key_id: str = "identity-dev-key-1"
+
+    # HS256 volontairement conservé ici : le state OAuth (anti-CSRF) est émis et
+    # vérifié par identity uniquement, jamais par un autre service (ADR-0008 ne
+    # s'applique qu'aux tokens consommés par d'autres services).
+    oauth_state_secret: str = "changeme-in-env-never-use-default-in-production"
 
     google_oauth_client_id: str = ""
     google_oauth_client_secret: str = ""

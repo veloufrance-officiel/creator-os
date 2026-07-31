@@ -55,6 +55,21 @@ jobs:
           # de Postgres réel en CI pour ce sprint. JWT_SECRET requis même en test.
           jwt_secret: ci-test-secret-not-for-production
 
+  packages-security:
+    name: packages/security — lint & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/security
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: ruff check creator_os_security/ tests/
+      - run: pytest -q
+
   # TODO : ajouter un job par service au fur et à mesure de leur implémentation
   # (même structure que identity-service ci-dessus).
 

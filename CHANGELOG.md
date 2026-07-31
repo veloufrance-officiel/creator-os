@@ -5,6 +5,14 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
+### Ajouté — Sprint F2 (prérequis)
+
+- Migration RS256 ([ADR-0008](docs/adr/0008-rs256-migration-shared-security-package.md)) : `services/identity` signe désormais en RS256, expose `GET /.well-known/jwks.json`. Déclencheur ADR-0005 atteint (second service, `creator`, doit vérifier les tokens identity).
+- `packages/security` : package Python partagé (`creator_os_security`), vérification de token identity par JWKS, 4 tests. Premier consommateur : `services/creator` (à venir).
+- Secret distinct (`OAUTH_STATE_SECRET`) pour le state OAuth anti-CSRF, désormais découplé des clés de signature des access tokens.
+- CI : job `packages-security` (ruff + pytest) ajouté.
+- 34 tests au total : 30 dans `services/identity`, 4 dans `packages/security`.
+
 ### Ajouté — Sprint F1 (Identity Service, complet)
 
 - `services/identity` : register, login, refresh (rotation de session), logout, `/me`, `/audit-logs`

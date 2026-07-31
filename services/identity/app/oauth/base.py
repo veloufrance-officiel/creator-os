@@ -29,14 +29,16 @@ class InvalidOAuthState(Exception):
 
 
 def create_state_token() -> str:
-    """Anti-CSRF, sans stockage serveur (voir SPEC.md) : signé, courte durée de vie."""
+    """Anti-CSRF, sans stockage serveur (voir SPEC.md) : signé, courte durée de vie.
+    HS256 volontaire ici, voir ADR-0008 (ce token n'est jamais vérifié par un autre
+    service, donc pas concerné par la migration RS256)."""
     payload = {"purpose": "oauth_state", "iat": int(time.time()), "exp": int(time.time()) + STATE_TTL_SECONDS}
-    return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
+    return jwt.encode(payload, settings.oauth_state_secret, algorithm="HS256")
 
 
 def verify_state_token(token: str) -> None:
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
+        payload = jwt.decode(token, settings.oauth_state_secret, algorithms=["HS256"])
     except jwt.PyJWTError as exc:
         raise InvalidOAuthState("state invalide ou expiré") from exc
     if payload.get("purpose") != "oauth_state":

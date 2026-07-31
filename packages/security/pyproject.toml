@@ -1,0 +1,28 @@
+[project]
+name = "creator-os-security"
+version = "0.1.0"
+description = "Creator OS — vérification partagée des tokens émis par services/identity (ADR-0008)"
+requires-python = ">=3.12"
+dependencies = [
+    "pyjwt[crypto]>=2.9",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+]
+
+[tool.setuptools]
+packages = ["creator_os_security"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "B"]
