@@ -10,5 +10,12 @@ class Settings(BaseSettings):
     # dès qu'une séparation physique sera justifiée, sans rupture de contrat.
     identity_base_url: str = "http://localhost:8000"
 
+    # Origines autorisées pour apps/web (CORS) — mêmes valeurs que identity par défaut.
+    cors_allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+
+    @property
+    def cors_allowed_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]
+
 
 settings = Settings()

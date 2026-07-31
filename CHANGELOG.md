@@ -5,6 +5,12 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
+### Corrigé — préparation frontend (CORS + collision de migrations)
+
+- **CORS** : aucun des deux services n'acceptait de requête cross-origin — bloquant absolu pour tout frontend navigateur. `CORSMiddleware` ajouté aux deux (`CORS_ALLOWED_ORIGINS`, défaut : ports de dev Next.js habituels)
+- **Collision Alembic** : `identity` et `creator` partagent la même base (ADR-0009) mais utilisaient tous les deux la table `alembic_version` par défaut — un deuxième service exécutant ses migrations écrasait le suivi de version de l'autre. Chaque service utilise désormais sa propre table (`identity_alembic_version` / `creator_alembic_version`), vérifié en faisant tourner les deux historiques de migration sur une même base
+- 4 nouveaux tests CORS (2 par service) — 40 identity, 37 creator (77 au total)
+
 ### Ajouté — Quota de créateurs par type de compte (ADR-0012)
 
 - Définit team/enterprise (laissés neutres par ADR-0011) : `personal` = 1 créateur, `team` = 10, `enterprise` = illimité

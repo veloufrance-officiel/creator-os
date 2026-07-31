@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     google_oauth_client_ids: str = ""
     apple_client_ids: str = ""
 
+    # Origines autorisées pour apps/web (CORS) — voir SECURITY.md. Par défaut, les
+    # ports de dev habituels (Next.js). À restreindre au(x) vrai(s) domaine(s) en prod.
+    cors_allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+
+    @property
+    def cors_allowed_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]
+
     @property
     def google_oauth_client_ids_list(self) -> list[str]:
         ids = [c.strip() for c in self.google_oauth_client_ids.split(",") if c.strip()]
