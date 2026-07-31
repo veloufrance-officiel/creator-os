@@ -17,7 +17,9 @@ def hash_password(raw: str) -> str:
     return _hasher.hash(raw)
 
 
-def verify_password(raw: str, hashed: str) -> bool:
+def verify_password(raw: str, hashed: str | None) -> bool:
+    if hashed is None:
+        return False  # compte OAuth-only, pas de mot de passe à comparer (ADR-0006)
     try:
         return _hasher.verify(hashed, raw)
     except VerifyMismatchError:

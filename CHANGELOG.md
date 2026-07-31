@@ -5,18 +5,18 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
-### Ajouté — Sprint F1 (Identity Service, cœur)
+### Ajouté — Sprint F1 (Identity Service, complet)
 
 - `services/identity` : register, login, refresh (rotation de session), logout, `/me`, `/audit-logs`
+- OAuth Google (`/auth/oauth/google/authorize`, `/callback`) : abstraction provider-agnostique, politique de rattachement de compte
 - RBAC fonctionnel de bout en bout (deny by default), audit log sur les événements d'auth
-- [ADR-0004](docs/adr/0004-password-hashing-argon2id.md) (Argon2id) et [ADR-0005](docs/adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256)
-- Migration Alembic initiale (9 tables, cible Postgres)
-- 13 tests (SQLite en mémoire), lint ruff propre
-- CI : job `identity-service` activé (ruff + pytest)
+- [ADR-0004](docs/adr/0004-password-hashing-argon2id.md) (Argon2id), [ADR-0005](docs/adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256), [ADR-0006](docs/adr/0006-oauth-provider-abstraction-account-linking.md) (OAuth)
+- 2 migrations Alembic (schéma initial + mot de passe nullable)
+- 21 tests (SQLite en mémoire), lint ruff propre, CI `identity-service` verte
 
 ### Différé (voir `services/identity/SPEC.md`)
 
-- OAuth (dépend d'un choix de provider externe)
+- Autres providers OAuth (abstraction prête, ajout à la demande)
 - Row-Level Security PostgreSQL (isolation tenant en défense en profondeur)
 
 ## [0.1.0] — Sprint F0 — 2026-07-31

@@ -6,8 +6,9 @@
 `role_permissions`, `user_roles`, `sessions`, `audit_logs`,
 `oauth_accounts` (modèle présent, aucune route — voir `SPEC.md`).
 
-**Statut** : Sprint F1 — cœur implémenté et testé (register, login,
-refresh, logout, `/me`, RBAC, audit log). OAuth explicitement différé.
+**Statut** : Sprint F1 complet — register, login, refresh, logout, `/me`,
+RBAC, audit log, OAuth Google. 21 tests, CI verte. Autres providers OAuth
+et RLS Postgres différés (voir `SPEC.md`).
 
 **Spécification complète** : [`SPEC.md`](SPEC.md) — flux d'auth,
 endpoints, décisions actées ([ADR-0004](../../docs/adr/0004-password-hashing-argon2id.md),

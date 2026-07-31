@@ -4,9 +4,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import repository, schemas, service
 from app.database import get_db
+from app.oauth import base as oauth_base
+from app.oauth.google import GoogleOAuthProvider
 from app.rbac import CurrentUser, get_current_user, require_permission
 
 router = APIRouter()
+
+_PROVIDERS: dict[str, oauth_base.OAuthProvider] = {"google": GoogleOAuthProvider()}
+
+
+def get_oauth_provider(provider: str) -> oauth_base.OAuthProvider:
+    """Dépendance surchargeable en test (voir tests/test_oauth_flow.py) — évite tout
+    appel réseau réel vers Google pendant les tests (SPEC.md)."""
+    instance = _PROVIDERS.get(provider)
+    if instance is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"Provider OAuth inconnu : {provider}")
+    return instance
 
 
 @router.post("/auth/register", response_model=schemas.TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -49,6 +62,33 @@ async def me(current_user: CurrentUser = Depends(get_current_user), db: AsyncSes
     return schemas.UserResponse(
         id=user.id, email=user.email, tenant_id=user.tenant_id, roles=current_user.roles, created_at=user.created_at
     )
+
+
+@router.get("/auth/oauth/{provider}/authorize")
+async def oauth_authorize(oauth_provider: oauth_base.OAuthProvider = Depends(get_oauth_provider)):
+    state = oauth_base.create_state_token()
+    return {"authorization_url": oauth_provider.get_authorization_url(state)}
+
+
+@router.get("/auth/oauth/{provider}/callback", response_model=schemas.TokenResponse)
+async def oauth_callback(
+    provider: str,
+    code: str,
+    state: str,
+    oauth_provider: oauth_base.OAuthProvider = Depends(get_oauth_provider),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        oauth_base.verify_state_token(state)
+    except oauth_base.InvalidOAuthState as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    info = await oauth_provider.exchange_code_for_user_info(code)
+    try:
+        access, refresh = await service.oauth_login_or_register(db, provider=provider, info=info)
+    except service.AuthError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    return schemas.TokenResponse(access_token=access, refresh_token=refresh)
 
 
 @router.get("/audit-logs", response_model=list[schemas.AuditLogResponse])

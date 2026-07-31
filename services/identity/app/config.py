@@ -10,5 +10,9 @@ class Settings(BaseSettings):
     access_token_ttl_minutes: int = 15
     refresh_token_ttl_days: int = 7
 
+    google_oauth_client_id: str = ""
+    google_oauth_client_secret: str = ""
+    oauth_redirect_base_url: str = "http://localhost:8000"
+
 
 settings = Settings()

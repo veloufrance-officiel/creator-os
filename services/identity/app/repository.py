@@ -24,7 +24,9 @@ async def create_tenant(db: AsyncSession, name: str) -> models.Tenant:
     return tenant
 
 
-async def create_user(db: AsyncSession, *, tenant_id: uuid.UUID, email: str, hashed_password: str) -> models.User:
+async def create_user(
+    db: AsyncSession, *, tenant_id: uuid.UUID, email: str, hashed_password: str | None
+) -> models.User:
     user = models.User(tenant_id=tenant_id, email=email, hashed_password=hashed_password)
     db.add(user)
     await db.flush()
@@ -100,6 +102,25 @@ async def get_active_session_by_token_hash(db: AsyncSession, token_hash: str) ->
 async def revoke_session(db: AsyncSession, session: models.Session, *, at: datetime) -> None:
     session.revoked_at = at
     await db.flush()
+
+
+async def get_oauth_account(db: AsyncSession, *, provider: str, provider_account_id: str) -> models.OAuthAccount | None:
+    result = await db.execute(
+        select(models.OAuthAccount).where(
+            models.OAuthAccount.provider == provider,
+            models.OAuthAccount.provider_account_id == provider_account_id,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_oauth_account(
+    db: AsyncSession, *, user_id: uuid.UUID, provider: str, provider_account_id: str
+) -> models.OAuthAccount:
+    account = models.OAuthAccount(user_id=user_id, provider=provider, provider_account_id=provider_account_id)
+    db.add(account)
+    await db.flush()
+    return account
 
 
 async def write_audit_log(

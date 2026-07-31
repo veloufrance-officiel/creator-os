@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import repository, security
 from app.config import settings
+from app.oauth.base import OAuthUserInfo
 
 # Catalogue de permissions F1 — voir SPEC.md. Un nouveau service ajoutera les siennes,
 # jamais au nom d'identity.
@@ -20,16 +21,7 @@ async def register(db: AsyncSession, *, email: str, password: str) -> tuple[dict
     if existing is not None:
         raise AuthError("Un compte existe déjà avec cet email.")
 
-    tenant = await repository.create_tenant(db, name=f"Workspace de {email}")
-    user = await repository.create_user(
-        db, tenant_id=tenant.id, email=email, hashed_password=security.hash_password(password)
-    )
-    owner_role = await repository.create_role(db, tenant_id=tenant.id, name="owner")
-    for code in F1_OWNER_PERMISSIONS:
-        permission = await repository.get_or_create_permission(db, code=code)
-        await repository.grant_permission_to_role(db, role_id=owner_role.id, permission_id=permission.id)
-    await repository.assign_role_to_user(db, user_id=user.id, role_id=owner_role.id)
-
+    user, tenant = await _create_new_account(db, email=email, hashed_password=security.hash_password(password))
     await repository.write_audit_log(
         db, action="user.register", tenant_id=tenant.id, user_id=user.id, metadata={"email": email}
     )
@@ -37,6 +29,55 @@ async def register(db: AsyncSession, *, email: str, password: str) -> tuple[dict
     access, refresh = await _issue_tokens(db, user_id=user.id, tenant_id=tenant.id, roles=["owner"])
     await db.commit()
     return _user_payload(user, ["owner"]), access, refresh
+
+
+async def oauth_login_or_register(db: AsyncSession, *, provider: str, info: OAuthUserInfo) -> tuple[str, str]:
+    """Politique de rattachement de compte — voir ADR-0006."""
+    link = await repository.get_oauth_account(db, provider=provider, provider_account_id=info.provider_account_id)
+    if link is not None:
+        user = await repository.get_user_by_id(db, link.user_id)
+        action = "user.login"
+    else:
+        existing = await repository.get_user_by_email(db, info.email)
+        if existing is not None and info.email_verified:
+            user = existing
+            await repository.create_oauth_account(
+                db, user_id=user.id, provider=provider, provider_account_id=info.provider_account_id
+            )
+            action = "user.oauth_linked"
+        elif existing is not None:
+            # Email déjà pris mais pas certifié vérifié par le provider : impossible de
+            # créer un second compte (email unique) et interdit de rattacher (ADR-0006).
+            # Rejet explicite plutôt qu'un conflit de contrainte SQL silencieux.
+            raise AuthError(
+                "Un compte existe déjà avec cet email. Connectez-vous avec votre mot de passe, "
+                "ou vérifiez votre email chez le fournisseur avant de réessayer."
+            )
+        else:
+            user, tenant = await _create_new_account(db, email=info.email, hashed_password=None)
+            await repository.create_oauth_account(
+                db, user_id=user.id, provider=provider, provider_account_id=info.provider_account_id
+            )
+            action = "user.oauth_register"
+
+    roles = await repository.get_user_role_codes(db, user.id)
+    access, refresh = await _issue_tokens(db, user_id=user.id, tenant_id=user.tenant_id, roles=roles)
+    await repository.write_audit_log(
+        db, action=action, tenant_id=user.tenant_id, user_id=user.id, metadata={"provider": provider}
+    )
+    await db.commit()
+    return access, refresh
+
+
+async def _create_new_account(db: AsyncSession, *, email: str, hashed_password: str | None):
+    tenant = await repository.create_tenant(db, name=f"Workspace de {email}")
+    user = await repository.create_user(db, tenant_id=tenant.id, email=email, hashed_password=hashed_password)
+    owner_role = await repository.create_role(db, tenant_id=tenant.id, name="owner")
+    for code in F1_OWNER_PERMISSIONS:
+        permission = await repository.get_or_create_permission(db, code=code)
+        await repository.grant_permission_to_role(db, role_id=owner_role.id, permission_id=permission.id)
+    await repository.assign_role_to_user(db, user_id=user.id, role_id=owner_role.id)
+    return user, tenant
 
 
 async def login(db: AsyncSession, *, email: str, password: str) -> tuple[dict, str, str]:

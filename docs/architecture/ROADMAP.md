@@ -14,21 +14,21 @@ source de vérité.
 - [x] Sécurité documentée (`SECURITY.md`)
 - [x] Tooling monorepo (pnpm workspaces, Turborepo, Makefile, script de validation de structure)
 
-## Sprint F1 — Identity Service 🟡
+## Sprint F1 — Identity Service ✅
 
 Objectif : un créateur peut créer un compte dans un environnement sécurisé.
 
 - [x] Spécification (`services/identity/SPEC.md`) avant le code
-- [x] Décisions actées : [ADR-0004](../adr/0004-password-hashing-argon2id.md) (Argon2id), [ADR-0005](../adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256)
-- [x] User, Tenant, Role, Permission, Session, Audit Log — implémentés et testés (13 tests, SQLite en mémoire)
-- [x] Migration Alembic initiale (cible Postgres)
-- [x] CI : job `identity-service` (ruff + pytest) activé
-- [ ] **OAuth** — explicitement différé, voir `SPEC.md` (dépend d'un choix de provider externe)
-- [ ] Row-Level Security PostgreSQL (isolation tenant en défense en profondeur — filtrage applicatif en place, RLS pas encore)
+- [x] Décisions actées : [ADR-0004](../adr/0004-password-hashing-argon2id.md) (Argon2id), [ADR-0005](../adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256), [ADR-0006](../adr/0006-oauth-provider-abstraction-account-linking.md) (OAuth)
+- [x] User, Tenant, Role, Permission, Session, Audit Log — implémentés et testés
+- [x] OAuth Google — abstraction provider-agnostique, politique de rattachement de compte (ADR-0006)
+- [x] Migrations Alembic (2 : schéma initial + mot de passe nullable pour comptes OAuth-only)
+- [x] 21 tests (SQLite en mémoire), CI `identity-service` (ruff + pytest) verte
+- [ ] Row-Level Security PostgreSQL — isolation tenant en défense en profondeur (filtrage applicatif en place ; RLS reporté, pas bloquant)
+- [ ] Autres providers OAuth (GitHub, etc.) — abstraction prête, ajoutés à la demande produit
 
-## Sprints suivants (ordre non figé)
+## Sprint F2 — Creator Twin (prochain, dans l'ordre)
 
-- Creator Twin (`services/creator`)
 - Media Engine (`services/media`)
 - AI Core (`services/ai`) — voir ADR-0002
 - Memory Engine (`services/memory`)
