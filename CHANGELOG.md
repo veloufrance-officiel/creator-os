@@ -5,6 +5,16 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
+### Corrigé — Agences multi-créateurs (ADR-0010)
+
+- `Creator.tenant_id` n'est plus unique : un tenant (agence) peut gérer plusieurs créateurs — corrige une hypothèse implicite de Sprint F2, jamais un besoin produit vérifié
+- `Creator.is_authorized` (défaut `True`) : contrôle la visibilité publique d'un créateur sans supprimer ses données ni bloquer l'accès interne de l'agence
+- `Portfolio.creator_id` : un portfolio appartient à un créateur précis, pas seulement au tenant
+- **API revue** : `/creators/me` (F2) remplacé par une API en collection (`POST/GET /creators`, `GET/PATCH/DELETE /creators/{id}`, portfolios nichés sous `/creators/{id}/portfolios/...`) — aucun déploiement réel n'existait encore, révision propre plutôt que rétrocompatibilité d'un mauvais motif
+- Différé explicitement : délégation fine (quel utilisateur d'une agence gère quel créateur), dépend d'un flow d'invitation multi-utilisateurs côté `identity` non encore construit
+- Migration Alembic 0002 (creator) : lève la contrainte unique, ajoute `is_authorized` et `portfolios.creator_id`
+- 24 tests (creator), dont désautorisation d'un créateur et isolation tenant étendue
+
 ### Ajouté — Sprint F2 (Creator Twin)
 
 - `services/creator` : profil créateur enrichi (`PATCH/GET /creators/me`), portfolios (CRUD + publication), blocs de portfolio (CRUD + réordonnancement), consultation publique par slug

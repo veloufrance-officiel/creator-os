@@ -3,8 +3,11 @@
 Objectif : le créateur peut construire un profil enrichi (Creator Twin)
 et un portfolio public structuré en blocs — reprend et étend le besoin
 V0 (« portfolio professionnel en moins de 5 minutes »,
-`docs/architecture/v0/PRODUCT_REQUIREMENTS.md`). Décisions structurantes
-actées : [ADR-0009](../../docs/adr/0009-creator-twin-data-model-boundary.md).
+`docs/architecture/v0/PRODUCT_REQUIREMENTS.md`). Un tenant peut être un
+créateur solo ou une **agence gérant plusieurs créateurs** — voir
+[ADR-0009](../../docs/adr/0009-creator-twin-data-model-boundary.md) et
+[ADR-0010](../../docs/adr/0010-multi-creator-agency-tenants.md)
+(décisions structurantes).
 
 ## Dans le périmètre F2
 
@@ -51,25 +54,42 @@ paramètre `tenant_id` fourni par le client.
 
 | Méthode | Route | Auth | Description |
 |---|---|---|---|
-| PATCH | `/creators/me` | Bearer | Crée ou met à jour le profil du tenant courant (upsert) |
-| GET | `/creators/me` | Bearer | Profil du tenant courant |
-| POST | `/portfolios` | Bearer | Crée un portfolio (brouillon, non publié par défaut — Privacy By Default, ADR-0003) |
-| GET | `/portfolios` | Bearer | Liste les portfolios du tenant courant |
-| GET | `/portfolios/{id}` | Bearer | Détail d'un portfolio du tenant courant |
-| PATCH | `/portfolios/{id}` | Bearer | Met à jour titre/slug/`is_published` |
-| DELETE | `/portfolios/{id}` | Bearer | Supprime un portfolio |
-| POST | `/portfolios/{id}/blocks` | Bearer | Ajoute un bloc |
-| PATCH | `/portfolios/{id}/blocks/{block_id}` | Bearer | Met à jour un bloc (contenu et/ou position) |
-| DELETE | `/portfolios/{id}/blocks/{block_id}` | Bearer | Supprime un bloc |
-| GET | `/public/portfolios/{slug}` | Aucune | Portfolio publié uniquement (404 si non publié ou inexistant — jamais de distinction entre les deux, pour ne pas révéler l'existence d'un slug privé) |
+| POST | `/creators` | Bearer | Ajoute un créateur géré par le tenant courant (agence ou solo) |
+| GET | `/creators` | Bearer | Liste les créateurs du tenant courant |
+| GET | `/creators/{id}` | Bearer | Détail d'un créateur du tenant courant |
+| PATCH | `/creators/{id}` | Bearer | Met à jour le profil et/ou `is_authorized` (ADR-0010) |
+| DELETE | `/creators/{id}` | Bearer | Supprime un créateur |
+| POST | `/creators/{id}/portfolios` | Bearer | Crée un portfolio pour ce créateur (brouillon, non publié — ADR-0003) |
+| GET | `/creators/{id}/portfolios` | Bearer | Liste les portfolios de ce créateur |
+| GET | `/creators/{id}/portfolios/{pid}` | Bearer | Détail |
+| PATCH | `/creators/{id}/portfolios/{pid}` | Bearer | Met à jour titre/slug/`is_published` |
+| DELETE | `/creators/{id}/portfolios/{pid}` | Bearer | Supprime |
+| POST | `/creators/{id}/portfolios/{pid}/blocks` | Bearer | Ajoute un bloc |
+| PATCH | `/creators/{id}/portfolios/{pid}/blocks/{bid}` | Bearer | Met à jour un bloc |
+| DELETE | `/creators/{id}/portfolios/{pid}/blocks/{bid}` | Bearer | Supprime un bloc |
+| GET | `/public/portfolios/{slug}` | Aucune | Visible seulement si publié **et** créateur autorisé (404 identique sinon — jamais de fuite d'information, ADR-0010) |
+
+## Agences multi-créateurs (ADR-0010)
+
+Un tenant peut gérer plusieurs `Creator`. `Creator.is_authorized`
+(défaut `True` à la création) contrôle la **visibilité publique** : un
+créateur désautorisé disparaît de `/public/portfolios/{slug}` même si
+son portfolio individuel reste `is_published`. L'agence garde un accès
+interne complet (lecture/écriture) à un créateur désautorisé.
+
+**Différé** : quel utilisateur précis d'une agence multi-personnes peut
+gérer quel créateur (délégation fine). Dépend d'un flow d'invitation
+multi-utilisateurs côté `identity`, qui n'existe pas encore. D'ici là,
+l'unique utilisateur du tenant gère tous ses créateurs.
 
 ## Tests prévus
 
-Upsert profil (création puis mise à jour) · portfolio créé non publié
-par défaut · `/public/portfolios/{slug}` retourne 404 sur un portfolio
-non publié (même s'il existe) · 404 identique sur un slug inexistant
-(pas de fuite d'information) · publication rend le portfolio accessible
-publiquement · blocs créés/modifiés/réordonnés/supprimés · isolation
-tenant (le tenant A ne peut ni lire ni modifier un portfolio du tenant
-B) · toutes les routes protégées rejettent une requête sans token ou
-avec un token invalide.
+Création de plusieurs créateurs sous un même tenant · désautorisation
+d'un créateur (retire son portfolio publié du public, réautorisation le
+restaure) · l'agence garde un accès interne à un créateur désautorisé ·
+portfolio créé non publié par défaut · `/public/portfolios/{slug}`
+retourne 404 sur un portfolio non publié, un créateur désautorisé, ou
+un slug inexistant — jamais de distinction (pas de fuite d'information)
+· blocs créés/modifiés/réordonnés/supprimés · isolation tenant complète
+(créateurs, portfolios, désautorisation) · toutes les routes protégées
+rejettent une requête sans token ou avec un token invalide.

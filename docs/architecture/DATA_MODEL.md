@@ -20,17 +20,16 @@ d'implémentation de chaque service, pas avant.
 
 ## `services/creator`
 
-Voir [ADR-0009](../adr/0009-creator-twin-data-model-boundary.md) : une
-seule table `creators` réalise le « Creator Twin » (pas de table séparée
-`creator_twins`). Aucune contrainte de clé étrangère vers les tables
-d'`identity` — `user_id`/`tenant_id` sont des UUID simples, l'appartenance
-est garantie par la vérification du token (`packages/security`), pas par
-SQL.
+Voir [ADR-0009](../adr/0009-creator-twin-data-model-boundary.md) (une
+seule table `creators`, pas de `creator_twins` séparée ; aucune FK vers
+`identity`) et [ADR-0010](../adr/0010-multi-creator-agency-tenants.md)
+(un tenant peut posséder plusieurs `creators` — cas agence — avec un
+flag d'autorisation par créateur).
 
 | Table | Rôle |
 |---|---|
-| `creators` | Profil enrichi (1 par tenant) : niche, ton de voix, audience, bio |
-| `portfolios` | Reprend V0 — `slug` unique, `is_published` (privé par défaut, ADR-0003) |
+| `creators` | Profil enrichi. **Plusieurs par tenant possibles** (agence, ADR-0010) : niche, ton de voix, audience, bio, `is_authorized` |
+| `portfolios` | Reprend V0 — `creator_id` (appartient à un créateur précis, pas juste au tenant), `slug` unique, `is_published` (privé par défaut, ADR-0003) |
 | `portfolio_blocks` | Reprend V0 — `type` + `config` JSON, extensible sans migration par type de bloc |
 
 ## `services/media`

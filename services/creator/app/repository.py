@@ -8,21 +8,30 @@ from sqlalchemy.orm import selectinload
 from app import models
 
 
-async def get_creator_by_tenant(db: AsyncSession, tenant_id: uuid.UUID) -> models.Creator | None:
-    result = await db.execute(select(models.Creator).where(models.Creator.tenant_id == tenant_id))
+async def get_creator_by_id_and_tenant(
+    db: AsyncSession, *, creator_id: uuid.UUID, tenant_id: uuid.UUID
+) -> models.Creator | None:
+    result = await db.execute(
+        select(models.Creator).where(models.Creator.id == creator_id, models.Creator.tenant_id == tenant_id)
+    )
     return result.scalar_one_or_none()
 
 
-async def upsert_creator(db: AsyncSession, *, user_id: uuid.UUID, tenant_id: uuid.UUID, fields: dict) -> models.Creator:
-    creator = await get_creator_by_tenant(db, tenant_id)
-    if creator is None:
-        creator = models.Creator(user_id=user_id, tenant_id=tenant_id, **fields)
-        db.add(creator)
-    else:
-        for key, value in fields.items():
-            setattr(creator, key, value)
+async def list_creators_by_tenant(db: AsyncSession, tenant_id: uuid.UUID) -> list[models.Creator]:
+    result = await db.execute(select(models.Creator).where(models.Creator.tenant_id == tenant_id))
+    return list(result.scalars().all())
+
+
+async def create_creator(db: AsyncSession, *, user_id: uuid.UUID, tenant_id: uuid.UUID, fields: dict) -> models.Creator:
+    creator = models.Creator(user_id=user_id, tenant_id=tenant_id, **fields)
+    db.add(creator)
     await db.flush()
     return creator
+
+
+async def delete_creator(db: AsyncSession, creator: models.Creator) -> None:
+    await db.delete(creator)
+    await db.flush()
 
 
 async def get_portfolio_by_slug(db: AsyncSession, slug: str) -> models.Portfolio | None:
@@ -32,24 +41,42 @@ async def get_portfolio_by_slug(db: AsyncSession, slug: str) -> models.Portfolio
     return result.scalar_one_or_none()
 
 
-async def get_portfolio_by_id_and_tenant(
-    db: AsyncSession, *, portfolio_id: uuid.UUID, tenant_id: uuid.UUID
+async def is_creator_authorized(db: AsyncSession, creator_id: uuid.UUID) -> bool:
+    result = await db.execute(select(models.Creator.is_authorized).where(models.Creator.id == creator_id))
+    value = result.scalar_one_or_none()
+    return bool(value)
+
+
+async def get_portfolio_by_id_and_creator(
+    db: AsyncSession, *, portfolio_id: uuid.UUID, creator_id: uuid.UUID, tenant_id: uuid.UUID
 ) -> models.Portfolio | None:
     result = await db.execute(
         select(models.Portfolio)
         .options(selectinload(models.Portfolio.blocks))
-        .where(models.Portfolio.id == portfolio_id, models.Portfolio.tenant_id == tenant_id)
+        .where(
+            models.Portfolio.id == portfolio_id,
+            models.Portfolio.creator_id == creator_id,
+            models.Portfolio.tenant_id == tenant_id,
+        )
     )
     return result.scalar_one_or_none()
 
 
-async def list_portfolios_by_tenant(db: AsyncSession, tenant_id: uuid.UUID) -> list[models.Portfolio]:
-    result = await db.execute(select(models.Portfolio).where(models.Portfolio.tenant_id == tenant_id))
+async def list_portfolios_by_creator(
+    db: AsyncSession, *, creator_id: uuid.UUID, tenant_id: uuid.UUID
+) -> list[models.Portfolio]:
+    result = await db.execute(
+        select(models.Portfolio).where(
+            models.Portfolio.creator_id == creator_id, models.Portfolio.tenant_id == tenant_id
+        )
+    )
     return list(result.scalars().all())
 
 
-async def create_portfolio(db: AsyncSession, *, tenant_id: uuid.UUID, slug: str, title: str) -> models.Portfolio:
-    portfolio = models.Portfolio(tenant_id=tenant_id, slug=slug, title=title)
+async def create_portfolio(
+    db: AsyncSession, *, tenant_id: uuid.UUID, creator_id: uuid.UUID, slug: str, title: str
+) -> models.Portfolio:
+    portfolio = models.Portfolio(tenant_id=tenant_id, creator_id=creator_id, slug=slug, title=title)
     db.add(portfolio)
     await db.flush()
     return portfolio

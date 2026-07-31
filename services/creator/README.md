@@ -1,15 +1,17 @@
 # services/creator
 
-**Rôle** : Creator Twin — profil créateur enrichi (une seule table
-`creators`, voir [ADR-0009](../../docs/adr/0009-creator-twin-data-model-boundary.md)),
-portfolios et blocs (le portfolio affiché reste une vue dans `apps/web`,
-ce service en détient la structure et l'expose publiquement par slug).
+**Rôle** : Creator Twin — profil créateur enrichi, portfolios et blocs.
+Un tenant peut être un créateur solo ou une **agence gérant plusieurs
+créateurs** avec autorisation par créateur (voir
+[ADR-0009](../../docs/adr/0009-creator-twin-data-model-boundary.md) et
+[ADR-0010](../../docs/adr/0010-multi-creator-agency-tenants.md)).
 
 **Tables possédées** : `creators`, `portfolios`, `portfolio_blocks`.
 Aucune FK vers les tables `identity` (ADR-0009).
 
-**Statut** : Sprint F2 — implémenté et testé (profil, portfolios, blocs,
-publication, isolation tenant). 17 tests. Bio IA et upload média réels
+**Statut** : Sprint F2 — implémenté et testé (créateurs multiples par
+tenant, autorisation, portfolios, blocs, publication, isolation tenant).
+24 tests. Bio IA, upload média réel, et délégation fine multi-utilisateurs
 différés (voir `SPEC.md`).
 
 **Spécification complète** : [`SPEC.md`](SPEC.md).

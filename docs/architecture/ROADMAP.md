@@ -32,9 +32,11 @@ Objectif : un créateur peut créer un compte dans un environnement sécurisé.
 
 - [x] **Prérequis** : migration RS256 ([ADR-0008](../adr/0008-rs256-migration-shared-security-package.md)) — déclencheur ADR-0005 atteint, `services/identity` expose `/.well-known/jwks.json`
 - [x] **Prérequis** : `packages/security` — vérification partagée des tokens identity, 4 tests, premier consommateur = `services/creator`
-- [x] `services/creator` : [SPEC.md](../../services/creator/SPEC.md), [ADR-0009](../adr/0009-creator-twin-data-model-boundary.md) (modèle de données), profil enrichi, portfolios, blocs, publication, isolation tenant — 17 tests
+- [x] `services/creator` : [SPEC.md](../../services/creator/SPEC.md), [ADR-0009](../adr/0009-creator-twin-data-model-boundary.md) (modèle de données), profil enrichi, portfolios, blocs, publication, isolation tenant
+- [x] **Correction** : [ADR-0010](../adr/0010-multi-creator-agency-tenants.md) — un tenant peut être une agence gérant plusieurs créateurs, avec autorisation par créateur (visibilité publique). API revue en collection (`/creators`, plus `/creators/me`). 24 tests.
 - [ ] Bio générée par IA (dépend de `services/ai`, différé — voir SPEC.md)
 - [ ] Upload média réel (dépend de `services/media`, différé)
+- [ ] Délégation fine multi-utilisateurs par agence (dépend d'un flow d'invitation `identity` non encore construit)
 
 ## Sprint F3 et suivants (ordre non figé)
 

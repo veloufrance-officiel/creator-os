@@ -8,12 +8,21 @@ from pydantic import BaseModel, Field
 BlockType = Literal["bio", "media_gallery", "links", "contact"]
 
 
-class CreatorUpsertRequest(BaseModel):
+class CreatorCreateRequest(BaseModel):
     display_name: str = Field(default="", max_length=200)
     niche: str = Field(default="", max_length=200)
     tone_of_voice: str = Field(default="", max_length=500)
     audience: str = Field(default="", max_length=500)
     bio: str = Field(default="", max_length=5000)
+
+
+class CreatorUpdateRequest(BaseModel):
+    display_name: str | None = Field(default=None, max_length=200)
+    niche: str | None = Field(default=None, max_length=200)
+    tone_of_voice: str | None = Field(default=None, max_length=500)
+    audience: str | None = Field(default=None, max_length=500)
+    bio: str | None = Field(default=None, max_length=5000)
+    is_authorized: bool | None = None
 
 
 class CreatorResponse(BaseModel):
@@ -23,6 +32,7 @@ class CreatorResponse(BaseModel):
     tone_of_voice: str
     audience: str
     bio: str
+    is_authorized: bool
     updated_at: datetime
 
 
