@@ -85,7 +85,9 @@ async def test_callback_second_time_same_account_logs_in_not_duplicate(client, f
 async def test_callback_links_to_existing_verified_email_account(client, fake_google, registered_user_payload):
     # Un compte email/mot de passe existe déjà avec le même email que le provider renvoie.
     email = "existing@creator-os.dev"
-    register_resp = await client.post("/auth/register", json={"email": email, "password": "correct-horse-battery"})
+    register_resp = await client.post(
+        "/auth/register", json={"email": email, "password": "correct-horse-battery", "account_type": "personal"}
+    )
     original_user_id = (
         await client.get("/me", headers={"Authorization": f"Bearer {register_resp.json()['access_token']}"})
     ).json()["id"]
@@ -106,7 +108,9 @@ async def test_callback_links_to_existing_verified_email_account(client, fake_go
 )
 async def test_callback_rejects_when_existing_email_not_verified_by_provider(client, fake_google):
     email = "unverified@creator-os.dev"
-    await client.post("/auth/register", json={"email": email, "password": "correct-horse-battery"})
+    await client.post(
+        "/auth/register", json={"email": email, "password": "correct-horse-battery", "account_type": "personal"}
+    )
 
     state = await _get_state(client)
     oauth_resp = await client.get("/auth/oauth/google/callback", params={"code": "c1", "state": state})

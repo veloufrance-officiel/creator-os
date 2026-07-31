@@ -22,8 +22,9 @@ Objectif : un créateur peut créer un compte dans un environnement sécurisé.
 - [x] Décisions actées : [ADR-0004](../adr/0004-password-hashing-argon2id.md) (Argon2id), [ADR-0005](../adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256), [ADR-0006](../adr/0006-oauth-provider-abstraction-account-linking.md) (OAuth)
 - [x] User, Tenant, Role, Permission, Session, Audit Log — implémentés et testés
 - [x] OAuth Google (redirection web) + sign-in natif Google et Apple par ID token — [ADR-0006](../adr/0006-oauth-provider-abstraction-account-linking.md), [ADR-0007](../adr/0007-oidc-id-token-verification-multiplatform.md) — prépare le déploiement mobile (iOS/Android) autant que web
+- [x] Type de compte à l'inscription (personal/team/enterprise) — [ADR-0011](../adr/0011-tenant-account-types.md), ajouté après coup pendant Sprint F2/F3 (`GET/PATCH /tenant`)
 - [x] Migrations Alembic (2 : schéma initial + mot de passe nullable pour comptes OAuth-only)
-- [x] 27 tests (SQLite en mémoire), CI `identity-service` (ruff + pytest) verte
+- [x] 38 tests (SQLite en mémoire), CI `identity-service` (ruff + pytest) verte
 - [ ] Row-Level Security PostgreSQL — isolation tenant en défense en profondeur (filtrage applicatif en place ; RLS reporté, pas bloquant)
 - [ ] Flow redirection web pour Apple (le natif, requis pour l'App Store, est fait ; le bouton web Apple est différé)
 - [ ] Autres providers OAuth (GitHub, etc.) — abstraction prête, ajoutés à la demande produit

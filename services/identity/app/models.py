@@ -21,6 +21,9 @@ class Tenant(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=_uuid)
     name: Mapped[str] = mapped_column(String(255))
+    # personal | team | enterprise — voir ADR-0011. Classification pour l'instant,
+    # pas encore de comportement différent entre team et enterprise.
+    account_type: Mapped[str] = mapped_column(String(20), default="personal")
     created_at: Mapped[datetime] = mapped_column(default=_now)
 
 

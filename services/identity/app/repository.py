@@ -17,11 +17,15 @@ async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> models.User | 
     return await db.get(models.User, user_id)
 
 
-async def create_tenant(db: AsyncSession, name: str) -> models.Tenant:
-    tenant = models.Tenant(name=name)
+async def create_tenant(db: AsyncSession, name: str, *, account_type: str = "personal") -> models.Tenant:
+    tenant = models.Tenant(name=name, account_type=account_type)
     db.add(tenant)
     await db.flush()
     return tenant
+
+
+async def get_tenant_by_id(db: AsyncSession, tenant_id: uuid.UUID) -> models.Tenant | None:
+    return await db.get(models.Tenant, tenant_id)
 
 
 async def create_user(

@@ -1,13 +1,17 @@
 """Schémas Pydantic — contrats d'API. Voir SPEC.md pour la liste des routes."""
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field
+
+AccountType = Literal["personal", "team", "enterprise"]
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+    account_type: AccountType  # requis : choix avant inscription finale (ADR-0011)
 
 
 class LoginRequest(BaseModel):
@@ -49,6 +53,16 @@ class AuditLogResponse(BaseModel):
     user_id: uuid.UUID | None
     event_metadata: dict
     created_at: datetime
+
+
+class TenantResponse(BaseModel):
+    id: uuid.UUID
+    account_type: AccountType
+    created_at: datetime
+
+
+class TenantUpdateRequest(BaseModel):
+    account_type: AccountType
 
 
 class ErrorResponse(BaseModel):

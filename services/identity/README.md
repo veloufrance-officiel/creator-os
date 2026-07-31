@@ -6,10 +6,11 @@
 `role_permissions`, `user_roles`, `sessions`, `audit_logs`,
 `oauth_accounts` (modèle présent, aucune route — voir `SPEC.md`).
 
-**Statut** : Sprint F1 complet — register, login, refresh, logout, `/me`,
-RBAC, audit log, OAuth Google (web + natif) et Apple (natif). 27 tests,
-CI verte. Autres providers OAuth, flow web Apple et RLS Postgres différés
-(voir `SPEC.md`).
+**Statut** : Sprint F1 complet — register (type de compte requis, ADR-0011),
+login, refresh, logout, `/me`, `/tenant`, RBAC, audit log, OAuth Google
+(web + natif) et Apple (natif). 38 tests, CI verte. Autres providers
+OAuth, flow web Apple, délégation multi-utilisateurs et RLS Postgres
+différés (voir `SPEC.md`).
 
 **Spécification complète** : [`SPEC.md`](SPEC.md) — flux d'auth,
 endpoints, décisions actées ([ADR-0004](../../docs/adr/0004-password-hashing-argon2id.md),

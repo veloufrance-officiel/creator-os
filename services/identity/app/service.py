@@ -16,12 +16,14 @@ class AuthError(Exception):
     """Erreur d'authentification — toujours traduite en message générique côté API."""
 
 
-async def register(db: AsyncSession, *, email: str, password: str) -> tuple[dict, str, str]:
+async def register(db: AsyncSession, *, email: str, password: str, account_type: str) -> tuple[dict, str, str]:
     existing = await repository.get_user_by_email(db, email)
     if existing is not None:
         raise AuthError("Un compte existe déjà avec cet email.")
 
-    user, tenant = await _create_new_account(db, email=email, hashed_password=security.hash_password(password))
+    user, tenant = await _create_new_account(
+        db, email=email, hashed_password=security.hash_password(password), account_type=account_type
+    )
     await repository.write_audit_log(
         db, action="user.register", tenant_id=tenant.id, user_id=user.id, metadata={"email": email}
     )
@@ -54,7 +56,9 @@ async def oauth_login_or_register(db: AsyncSession, *, provider: str, info: OAut
                 "ou vérifiez votre email chez le fournisseur avant de réessayer."
             )
         else:
-            user, tenant = await _create_new_account(db, email=info.email, hashed_password=None)
+            user, tenant = await _create_new_account(
+                db, email=info.email, hashed_password=None, account_type="personal"
+            )
             await repository.create_oauth_account(
                 db, user_id=user.id, provider=provider, provider_account_id=info.provider_account_id
             )
@@ -69,8 +73,8 @@ async def oauth_login_or_register(db: AsyncSession, *, provider: str, info: OAut
     return access, refresh
 
 
-async def _create_new_account(db: AsyncSession, *, email: str, hashed_password: str | None):
-    tenant = await repository.create_tenant(db, name=f"Workspace de {email}")
+async def _create_new_account(db: AsyncSession, *, email: str, hashed_password: str | None, account_type: str):
+    tenant = await repository.create_tenant(db, name=f"Workspace de {email}", account_type=account_type)
     user = await repository.create_user(db, tenant_id=tenant.id, email=email, hashed_password=hashed_password)
     owner_role = await repository.create_role(db, tenant_id=tenant.id, name="owner")
     for code in F1_OWNER_PERMISSIONS:
@@ -130,6 +134,30 @@ async def _issue_tokens(db: AsyncSession, *, user_id, tenant_id, roles: list[str
         db, user_id=user_id, refresh_token_hash=security.hash_refresh_token(raw_refresh), expires_at=expires_at
     )
     return access, raw_refresh
+
+
+async def get_tenant(db: AsyncSession, tenant_id):
+    tenant = await repository.get_tenant_by_id(db, tenant_id)
+    if tenant is None:
+        raise AuthError("Tenant introuvable.")  # ne devrait pas arriver pour un token valide
+    return tenant
+
+
+async def update_tenant_account_type(db: AsyncSession, *, tenant_id, user_id, account_type: str):
+    tenant = await repository.get_tenant_by_id(db, tenant_id)
+    if tenant is None:
+        raise AuthError("Tenant introuvable.")
+    previous = tenant.account_type
+    tenant.account_type = account_type
+    await repository.write_audit_log(
+        db,
+        action="tenant.account_type_changed",
+        tenant_id=tenant_id,
+        user_id=user_id,
+        metadata={"from": previous, "to": account_type},
+    )
+    await db.commit()
+    return tenant
 
 
 def _as_utc(value: datetime) -> datetime:

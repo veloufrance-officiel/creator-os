@@ -102,5 +102,7 @@ async def test_audit_logs_accessible_to_owner_and_contains_register_event(client
 
 
 async def test_password_too_short_is_rejected(client):
-    resp = await client.post("/auth/register", json={"email": "short@creator-os.dev", "password": "short"})
+    resp = await client.post(
+        "/auth/register", json={"email": "short@creator-os.dev", "password": "short", "account_type": "personal"}
+    )
     assert resp.status_code == 422

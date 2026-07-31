@@ -36,4 +36,4 @@ async def client(db_session):
 
 @pytest.fixture
 def registered_user_payload():
-    return {"email": "ada@creator-os.dev", "password": "correct-horse-battery-staple"}
+    return {"email": "ada@creator-os.dev", "password": "correct-horse-battery-staple", "account_type": "personal"}

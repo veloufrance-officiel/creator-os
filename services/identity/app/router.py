@@ -42,7 +42,9 @@ def get_token_provider(provider: str) -> oauth_base.OAuthProvider:
 @router.post("/auth/register", response_model=schemas.TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: schemas.RegisterRequest, db: AsyncSession = Depends(get_db)):
     try:
-        _, access, refresh = await service.register(db, email=body.email, password=body.password)
+        _, access, refresh = await service.register(
+            db, email=body.email, password=body.password, account_type=body.account_type
+        )
     except service.AuthError as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     return schemas.TokenResponse(access_token=access, refresh_token=refresh)
@@ -79,6 +81,27 @@ async def me(current_user: CurrentUser = Depends(get_current_user), db: AsyncSes
     return schemas.UserResponse(
         id=user.id, email=user.email, tenant_id=user.tenant_id, roles=current_user.roles, created_at=user.created_at
     )
+
+
+@router.get("/tenant", response_model=schemas.TenantResponse)
+async def get_tenant(current_user: CurrentUser = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    tenant = await service.get_tenant(db, current_user.tenant_id)
+    return schemas.TenantResponse(id=tenant.id, account_type=tenant.account_type, created_at=tenant.created_at)
+
+
+@router.patch("/tenant", response_model=schemas.TenantResponse)
+async def update_tenant(
+    body: schemas.TenantUpdateRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Voir ADR-0011 : nécessaire notamment pour les comptes créés par OAuth
+    (toujours 'personal' à la création faute d'étape interactive) qui veulent
+    passer team/entreprise après coup."""
+    tenant = await service.update_tenant_account_type(
+        db, tenant_id=current_user.tenant_id, user_id=current_user.id, account_type=body.account_type
+    )
+    return schemas.TenantResponse(id=tenant.id, account_type=tenant.account_type, created_at=tenant.created_at)
 
 
 @router.get("/auth/oauth/{provider}/authorize")

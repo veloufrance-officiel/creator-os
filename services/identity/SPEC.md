@@ -66,6 +66,17 @@ serveur pour l'access token.
 4. **Déconnexion** — révoque la session correspondant au refresh token
    fourni, audit `user.logout`.
 
+## Type de compte (ADR-0011)
+
+`personal` | `team` | `enterprise`, requis à l'inscription
+email/mot de passe (choix avant la fin de l'inscription), défaut
+`personal` pour une inscription OAuth (pas d'étape interactive
+possible dans ce flow) — modifiable ensuite via `PATCH /tenant`.
+**Classification pour l'instant** : aucune différence de comportement
+entre `team` et `enterprise` tant qu'un besoin produit concret ne la
+justifie. Ne débloque pas la délégation multi-utilisateurs (toujours
+différée, voir ci-dessous).
+
 ## Endpoints
 
 | Méthode | Route | Auth | Description |
@@ -79,6 +90,8 @@ serveur pour l'access token.
 | GET | `/auth/oauth/google/authorize` | Aucune | URL d'autorisation Google à ouvrir (flow web) |
 | GET | `/auth/oauth/google/callback` | Aucune (code+state en query) | Échange le code, connecte/crée le compte (flow web) |
 | POST | `/auth/oauth/{google\|apple}/token` | Aucune | ID token du SDK natif → connecte/crée le compte (mobile + web SDK, voir ADR-0007) |
+| GET | `/tenant` | Bearer | Type de compte du tenant courant (ADR-0011) |
+| PATCH | `/tenant` | Bearer | Change le type de compte (ex. personal → team après une inscription OAuth) |
 
 **Nécessite en production** : `GOOGLE_OAUTH_CLIENT_ID`,
 `GOOGLE_OAUTH_CLIENT_SECRET` (flow web) et/ou `GOOGLE_OAUTH_CLIENT_IDS`,

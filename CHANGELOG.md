@@ -5,6 +5,15 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
+### Ajouté — Type de compte à l'inscription (ADR-0011)
+
+- `Tenant.account_type` (`personal` | `team` | `enterprise`) — champ requis dans `POST /auth/register`, choix avant la fin de l'inscription
+- Inscription OAuth (Google/Apple) : défaut `personal` (pas d'étape interactive dans ce flow)
+- Nouveau `GET/PATCH /tenant` : consulter et changer le type de compte après coup (nécessaire pour les comptes OAuth) ; changement audité (`tenant.account_type_changed`)
+- Classification volontairement neutre pour l'instant : aucune différence de comportement entre `team` et `enterprise` tant qu'un besoin produit ne la précise
+- Migration Alembic 0003 (identity)
+- 8 nouveaux tests identity (38 au total)
+
 ### Corrigé — Agences multi-créateurs (ADR-0010)
 
 - `Creator.tenant_id` n'est plus unique : un tenant (agence) peut gérer plusieurs créateurs — corrige une hypothèse implicite de Sprint F2, jamais un besoin produit vérifié
