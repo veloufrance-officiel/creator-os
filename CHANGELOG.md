@@ -9,13 +9,17 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 - `services/identity` : register, login, refresh (rotation de session), logout, `/me`, `/audit-logs`
 - OAuth Google (`/auth/oauth/google/authorize`, `/callback`) : abstraction provider-agnostique, politique de rattachement de compte
+- Sign-in natif mobile + web SDK (`POST /auth/oauth/{google|apple}/token`) : vérification d'ID token OIDC, prépare le déploiement mobile (iOS/Android) en plus du web — [ADR-0007](docs/adr/0007-oidc-id-token-verification-multiplatform.md)
+- Sign in with Apple (natif) — requis par Apple dès qu'un autre login social est proposé sur iOS
+- Support multi-audience (un client ID par plateforme) pour Google et Apple
 - RBAC fonctionnel de bout en bout (deny by default), audit log sur les événements d'auth
-- [ADR-0004](docs/adr/0004-password-hashing-argon2id.md) (Argon2id), [ADR-0005](docs/adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256), [ADR-0006](docs/adr/0006-oauth-provider-abstraction-account-linking.md) (OAuth)
+- [ADR-0004](docs/adr/0004-password-hashing-argon2id.md) (Argon2id), [ADR-0005](docs/adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256), [ADR-0006](docs/adr/0006-oauth-provider-abstraction-account-linking.md) (rattachement de compte), [ADR-0007](docs/adr/0007-oidc-id-token-verification-multiplatform.md) (multi-plateforme)
 - 2 migrations Alembic (schéma initial + mot de passe nullable)
-- 21 tests (SQLite en mémoire), lint ruff propre, CI `identity-service` verte
+- 27 tests (SQLite en mémoire), lint ruff propre, CI `identity-service` verte
 
 ### Différé (voir `services/identity/SPEC.md`)
 
+- Flow redirection web pour Apple (natif fait, web différé)
 - Autres providers OAuth (abstraction prête, ajout à la demande)
 - Row-Level Security PostgreSQL (isolation tenant en défense en profondeur)
 

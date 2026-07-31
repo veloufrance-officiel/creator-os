@@ -75,7 +75,7 @@ une mise à jour du [`CHANGELOG.md`](CHANGELOG.md).
 ## Roadmap
 
 - [x] **Sprint F0 — Foundation** : structure repo, documentation, CI/CD initial, Docker, sécurité documentée, tooling monorepo
-- [x] **Sprint F1 — Identity Service** : register/login/refresh/logout, `/me`, RBAC, audit log, OAuth Google — un créateur peut créer un compte dans un environnement sécurisé
+- [x] **Sprint F1 — Identity Service** : register/login/refresh/logout, `/me`, RBAC, audit log, OAuth Google (web + natif) et Apple (natif, prépare le déploiement mobile) — un créateur peut créer un compte dans un environnement sécurisé
 - [ ] **Sprint F2 — Creator Twin** (prochain) : Media Engine, AI Core, Memory, Connectors, Billing, Quota
 
 Détail : [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md).

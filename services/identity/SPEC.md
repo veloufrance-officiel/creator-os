@@ -9,8 +9,10 @@ décisions structurantes déjà actées.
 
 Inscription, connexion, rafraîchissement de session, déconnexion,
 consultation du profil courant, RBAC minimal fonctionnel de bout en
-bout, journal d'audit, connexion via Google (OAuth) — voir
-[ADR-0006](../../docs/adr/0006-oauth-provider-abstraction-account-linking.md).
+bout, journal d'audit, connexion via Google (redirection web + ID token
+natif) et Apple (ID token natif) — voir
+[ADR-0006](../../docs/adr/0006-oauth-provider-abstraction-account-linking.md)
+et [ADR-0007](../../docs/adr/0007-oidc-id-token-verification-multiplatform.md).
 
 ## Hors périmètre F1 (explicitement différé)
 
@@ -74,15 +76,30 @@ serveur pour l'access token.
 | POST | `/auth/logout` | Refresh token (body) | Révoquer une session |
 | GET | `/me` | Bearer access token | Profil + rôles de l'utilisateur courant |
 | GET | `/audit-logs` | Bearer + permission `identity:audit_log:read` | Journal d'audit du tenant courant |
-| GET | `/auth/oauth/google/authorize` | Aucune | URL d'autorisation Google à ouvrir |
-| GET | `/auth/oauth/google/callback` | Aucune (code+state en query) | Échange le code, connecte/crée le compte |
+| GET | `/auth/oauth/google/authorize` | Aucune | URL d'autorisation Google à ouvrir (flow web) |
+| GET | `/auth/oauth/google/callback` | Aucune (code+state en query) | Échange le code, connecte/crée le compte (flow web) |
+| POST | `/auth/oauth/{google\|apple}/token` | Aucune | ID token du SDK natif → connecte/crée le compte (mobile + web SDK, voir ADR-0007) |
 
 **Nécessite en production** : `GOOGLE_OAUTH_CLIENT_ID`,
-`GOOGLE_OAUTH_CLIENT_SECRET` (app OAuth à créer sur Google Cloud
-Console — hors de portée pour être fait depuis ce sandbox),
-`OAUTH_REDIRECT_BASE_URL`. Sans ces variables réelles, les tests
-passent (provider simulé) mais le flux réel contre Google ne
-fonctionnera qu'une fois ces identifiants fournis.
+`GOOGLE_OAUTH_CLIENT_SECRET` (flow web) et/ou `GOOGLE_OAUTH_CLIENT_IDS`,
+`APPLE_CLIENT_IDS` (flow natif, un ID par plateforme, séparés par
+virgules) — apps à créer sur Google Cloud Console / Apple Developer,
+hors de portée pour être fait depuis ce sandbox. Sans ces variables
+réelles, les tests passent (signature/issuer simulés) mais les flows
+réels ne fonctionneront qu'une fois ces identifiants fournis.
+
+## Sign-in natif mobile + Apple (ADR-0007)
+
+Le produit doit à terme être déployable en app mobile (iOS/Android) en
+plus du web. Le sign-in natif fonctionne par **ID token** obtenu sur
+l'appareil via le SDK du provider (pas par redirection navigateur) —
+c'est aussi, de toute façon, le fonctionnement standard de Sign in with
+Apple, y compris côté web. `POST /auth/oauth/{provider}/token` sert ce
+besoin pour Google et Apple ; le flow redirection existant reste
+disponible pour Google en contexte web pur. Sign in with Apple est de
+facto requis dès qu'une app iOS propose un autre login social (règles
+App Store 4.8) — ce n'est pas une préférence produit, une contrainte de
+distribution.
 
 ## Tokens
 

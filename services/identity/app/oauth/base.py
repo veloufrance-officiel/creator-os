@@ -21,9 +21,7 @@ class OAuthUserInfo:
 class OAuthProvider(Protocol):
     name: str
 
-    def get_authorization_url(self, state: str) -> str: ...
-
-    async def exchange_code_for_user_info(self, code: str) -> OAuthUserInfo: ...
+    async def verify_id_token(self, id_token: str) -> OAuthUserInfo: ...
 
 
 class InvalidOAuthState(Exception):

@@ -5,18 +5,35 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import repository, schemas, service
 from app.database import get_db
 from app.oauth import base as oauth_base
+from app.oauth.apple import AppleOAuthProvider
 from app.oauth.google import GoogleOAuthProvider
+from app.oauth.oidc import InvalidIdToken
 from app.rbac import CurrentUser, get_current_user, require_permission
 
 router = APIRouter()
 
-_PROVIDERS: dict[str, oauth_base.OAuthProvider] = {"google": GoogleOAuthProvider()}
+# Flow redirection (web) — Google uniquement pour l'instant.
+_REDIRECT_PROVIDERS = {"google": GoogleOAuthProvider()}
+
+# Flow ID token natif (mobile + web SDK) — voir ADR-0007. Google réutilise la même
+# instance : un provider peut supporter les deux mécanismes à la fois.
+_TOKEN_PROVIDERS: dict[str, oauth_base.OAuthProvider] = {
+    "google": _REDIRECT_PROVIDERS["google"],
+    "apple": AppleOAuthProvider(),
+}
 
 
 def get_oauth_provider(provider: str) -> oauth_base.OAuthProvider:
     """Dépendance surchargeable en test (voir tests/test_oauth_flow.py) — évite tout
     appel réseau réel vers Google pendant les tests (SPEC.md)."""
-    instance = _PROVIDERS.get(provider)
+    instance = _REDIRECT_PROVIDERS.get(provider)
+    if instance is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"Provider OAuth inconnu : {provider}")
+    return instance
+
+
+def get_token_provider(provider: str) -> oauth_base.OAuthProvider:
+    instance = _TOKEN_PROVIDERS.get(provider)
     if instance is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"Provider OAuth inconnu : {provider}")
     return instance
@@ -84,6 +101,28 @@ async def oauth_callback(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     info = await oauth_provider.exchange_code_for_user_info(code)
+    try:
+        access, refresh = await service.oauth_login_or_register(db, provider=provider, info=info)
+    except service.AuthError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    return schemas.TokenResponse(access_token=access, refresh_token=refresh)
+
+
+@router.post("/auth/oauth/{provider}/token", response_model=schemas.TokenResponse)
+async def oauth_token_signin(
+    provider: str,
+    body: schemas.IdTokenRequest,
+    oauth_provider: oauth_base.OAuthProvider = Depends(get_token_provider),
+    db: AsyncSession = Depends(get_db),
+):
+    """Sign-in natif (mobile SDK ou JS SDK web) — voir ADR-0007. Pas de state/CSRF
+    ici : le token est déjà produit par le SDK du provider sur l'appareil du client,
+    ce n'est pas un flow de redirection navigateur."""
+    try:
+        info = await oauth_provider.verify_id_token(body.id_token)
+    except InvalidIdToken as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+
     try:
         access, refresh = await service.oauth_login_or_register(db, provider=provider, info=info)
     except service.AuthError as exc:

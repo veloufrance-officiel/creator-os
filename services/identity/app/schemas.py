@@ -19,6 +19,12 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class IdTokenRequest(BaseModel):
+    """Voir ADR-0007 : jeton obtenu par le client via le SDK natif du provider."""
+
+    id_token: str
+
+
 class LogoutRequest(BaseModel):
     refresh_token: str
 
