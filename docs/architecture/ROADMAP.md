@@ -28,12 +28,17 @@ Objectif : un créateur peut créer un compte dans un environnement sécurisé.
 - [ ] Flow redirection web pour Apple (le natif, requis pour l'App Store, est fait ; le bouton web Apple est différé)
 - [ ] Autres providers OAuth (GitHub, etc.) — abstraction prête, ajoutés à la demande produit
 
-## Sprint F2 — Creator Twin (en cours)
+## Sprint F2 — Creator Twin ✅
 
 - [x] **Prérequis** : migration RS256 ([ADR-0008](../adr/0008-rs256-migration-shared-security-package.md)) — déclencheur ADR-0005 atteint, `services/identity` expose `/.well-known/jwks.json`
 - [x] **Prérequis** : `packages/security` — vérification partagée des tokens identity, 4 tests, premier consommateur = `services/creator`
-- [ ] `services/creator` : spécification, modèle de données détaillé, implémentation
-- [ ] Media Engine (`services/media`)
+- [x] `services/creator` : [SPEC.md](../../services/creator/SPEC.md), [ADR-0009](../adr/0009-creator-twin-data-model-boundary.md) (modèle de données), profil enrichi, portfolios, blocs, publication, isolation tenant — 17 tests
+- [ ] Bio générée par IA (dépend de `services/ai`, différé — voir SPEC.md)
+- [ ] Upload média réel (dépend de `services/media`, différé)
+
+## Sprint F3 et suivants (ordre non figé)
+
+- Media Engine (`services/media`)
 - AI Core (`services/ai`) — voir ADR-0002
 - Memory Engine (`services/memory`)
 - Connectors (`services/connector`)

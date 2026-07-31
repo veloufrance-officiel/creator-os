@@ -70,6 +70,23 @@ jobs:
       - run: ruff check creator_os_security/ tests/
       - run: pytest -q
 
+  creator-service:
+    name: creator service — lint & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/creator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Ordre requis : creator dépend de packages/security en local (pas publié).
+      - run: pip install -e ../../packages/security
+      - run: pip install -e ".[dev]"
+      - run: ruff check app/ tests/
+      - run: pytest -q
+
   # TODO : ajouter un job par service au fur et à mesure de leur implémentation
   # (même structure que identity-service ci-dessus).
 

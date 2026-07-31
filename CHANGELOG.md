@@ -5,6 +5,20 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
+### Ajouté — Sprint F2 (Creator Twin)
+
+- `services/creator` : profil créateur enrichi (`PATCH/GET /creators/me`), portfolios (CRUD + publication), blocs de portfolio (CRUD + réordonnancement), consultation publique par slug
+- [ADR-0009](docs/adr/0009-creator-twin-data-model-boundary.md) : une seule table `creators` (pas de `creator_twins` séparée), aucune FK cross-service vers `identity`, isolation par tenant sans permissions fines pour l'instant
+- Portfolios privés par défaut (ADR-0003), 404 identique pour un portfolio privé ou un slug inexistant (pas de fuite d'information)
+- Premier consommateur réel de `packages/security` (vérifie les tokens `identity` via JWKS)
+- 17 tests, dont isolation tenant explicite (un tenant ne peut ni lire ni modifier les données d'un autre)
+- CI : job `creator-service` ajouté
+
+### Différé (voir `services/creator/SPEC.md`)
+
+- Bio générée par IA (dépend de `services/ai`)
+- Upload/stockage média réel (dépend de `services/media`)
+
 ### Ajouté — Sprint F2 (prérequis)
 
 - Migration RS256 ([ADR-0008](docs/adr/0008-rs256-migration-shared-security-package.md)) : `services/identity` signe désormais en RS256, expose `GET /.well-known/jwks.json`. Déclencheur ADR-0005 atteint (second service, `creator`, doit vérifier les tokens identity).
