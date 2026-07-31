@@ -5,7 +5,19 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
-Rien pour l'instant — Sprint F1 (Identity Service) à venir.
+### Ajouté — Sprint F1 (Identity Service, cœur)
+
+- `services/identity` : register, login, refresh (rotation de session), logout, `/me`, `/audit-logs`
+- RBAC fonctionnel de bout en bout (deny by default), audit log sur les événements d'auth
+- [ADR-0004](docs/adr/0004-password-hashing-argon2id.md) (Argon2id) et [ADR-0005](docs/adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256)
+- Migration Alembic initiale (9 tables, cible Postgres)
+- 13 tests (SQLite en mémoire), lint ruff propre
+- CI : job `identity-service` activé (ruff + pytest)
+
+### Différé (voir `services/identity/SPEC.md`)
+
+- OAuth (dépend d'un choix de provider externe)
+- Row-Level Security PostgreSQL (isolation tenant en défense en profondeur)
 
 ## [0.1.0] — Sprint F0 — 2026-07-31
 

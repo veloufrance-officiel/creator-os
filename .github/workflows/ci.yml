@@ -36,10 +36,32 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/dependency-review-action@v4
 
+  identity-service:
+    name: identity service — lint & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/identity
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: ruff check app/ tests/ alembic/
+      - run: pytest -q
+        env:
+          # Tests tournent sur SQLite en mémoire (voir tests/conftest.py) — pas besoin
+          # de Postgres réel en CI pour ce sprint. JWT_SECRET requis même en test.
+          jwt_secret: ci-test-secret-not-for-production
+
+  # TODO : ajouter un job par service au fur et à mesure de leur implémentation
+  # (même structure que identity-service ci-dessus).
+
   frontend:
     name: Frontend lint & test
     runs-on: ubuntu-latest
-    if: false # TODO Sprint F1/F2 : activer une fois apps/web et packages/* contiennent du code
+    if: false # TODO : activer une fois apps/web et packages/* contiennent du code
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -49,14 +71,3 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run lint test
-
-  backend:
-    name: Backend lint & test
-    runs-on: ubuntu-latest
-    if: false # TODO Sprint F1 : activer une fois services/identity contient du code
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - run: echo "TODO F1 - ruff check . && pytest"

@@ -14,15 +14,17 @@ source de vérité.
 - [x] Sécurité documentée (`SECURITY.md`)
 - [x] Tooling monorepo (pnpm workspaces, Turborepo, Makefile, script de validation de structure)
 
-## Sprint F1 — Identity Service (prochain)
+## Sprint F1 — Identity Service 🟡
 
 Objectif : un créateur peut créer un compte dans un environnement sécurisé.
 
-Fonctions : User, Tenant, Role, Permission, Session, OAuth, Audit Log.
-
-Prérequis avant de coder (règle de travail, voir `CONTRIBUTING.md`) :
-spécification du service, schéma de données détaillé (au-delà du niveau
-`DATA_MODEL.md`), tests prévus.
+- [x] Spécification (`services/identity/SPEC.md`) avant le code
+- [x] Décisions actées : [ADR-0004](../adr/0004-password-hashing-argon2id.md) (Argon2id), [ADR-0005](../adr/0005-jwt-hs256-then-rs256.md) (JWT HS256 → RS256)
+- [x] User, Tenant, Role, Permission, Session, Audit Log — implémentés et testés (13 tests, SQLite en mémoire)
+- [x] Migration Alembic initiale (cible Postgres)
+- [x] CI : job `identity-service` (ruff + pytest) activé
+- [ ] **OAuth** — explicitement différé, voir `SPEC.md` (dépend d'un choix de provider externe)
+- [ ] Row-Level Security PostgreSQL (isolation tenant en défense en profondeur — filtrage applicatif en place, RLS pas encore)
 
 ## Sprints suivants (ordre non figé)
 
