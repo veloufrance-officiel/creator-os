@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  structure-and-config-check:
+    name: Structure & config validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pyyaml
+      - run: python3 scripts/check_structure.py
+
+  markdown-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    continue-on-error: true # Sprint F0 : ne bloque pas tant que les règles ne sont pas ajustées à l'équipe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: "**/*.md"
+
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+
+  frontend:
+    name: Frontend lint & test
+    runs-on: ubuntu-latest
+    if: false # TODO Sprint F1/F2 : activer une fois apps/web et packages/* contiennent du code
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run lint test
+
+  backend:
+    name: Backend lint & test
+    runs-on: ubuntu-latest
+    if: false # TODO Sprint F1 : activer une fois services/identity contient du code
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: echo "TODO F1 - ruff check . && pytest"
