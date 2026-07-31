@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.auth import CurrentTenant, require_tenant
 from app.database import Base, get_db
 from app.main import app
+from app.router import get_account_type
 
 
 @pytest_asyncio.fixture
@@ -29,12 +30,12 @@ async def db_session():
 
 @pytest.fixture
 def tenant_a():
-    return CurrentTenant(user_id=uuid.uuid4(), tenant_id=uuid.uuid4())
+    return CurrentTenant(user_id=uuid.uuid4(), tenant_id=uuid.uuid4(), raw_token="fake-token-a")
 
 
 @pytest.fixture
 def tenant_b():
-    return CurrentTenant(user_id=uuid.uuid4(), tenant_id=uuid.uuid4())
+    return CurrentTenant(user_id=uuid.uuid4(), tenant_id=uuid.uuid4(), raw_token="fake-token-b")
 
 
 @pytest_asyncio.fixture
@@ -45,8 +46,15 @@ async def client(db_session, tenant_a):
     async def _override_require_tenant():
         return tenant_a
 
+    async def _override_account_type():
+        # Défaut généreux : les tests qui ne portent pas spécifiquement sur le quota
+        # (ADR-0012) ne doivent pas être bloqués par hasard. Les tests de quota
+        # surchargent explicitement cette dépendance avec une valeur précise.
+        return "enterprise"
+
     app.dependency_overrides[get_db] = _override_get_db
     app.dependency_overrides[require_tenant] = _override_require_tenant
+    app.dependency_overrides[get_account_type] = _override_account_type
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
@@ -70,10 +78,15 @@ async def client_as(db_session):
         return CurrentTenant(
             user_id=uuid.UUID(request.headers["x-test-user-id"]),
             tenant_id=uuid.UUID(request.headers["x-test-tenant-id"]),
+            raw_token="fake-token",
         )
+
+    async def _override_account_type():
+        return "enterprise"
 
     app.dependency_overrides[get_db] = _override_get_db
     app.dependency_overrides[require_tenant] = _override_require_tenant
+    app.dependency_overrides[get_account_type] = _override_account_type
 
     clients: list[AsyncClient] = []
 

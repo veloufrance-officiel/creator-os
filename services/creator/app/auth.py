@@ -17,6 +17,7 @@ _bearer = HTTPBearer(auto_error=False)
 class CurrentTenant:
     user_id: uuid.UUID
     tenant_id: uuid.UUID
+    raw_token: str  # transmis à identity pour la vérification de quota (ADR-0012)
 
 
 async def require_tenant(
@@ -29,4 +30,6 @@ async def require_tenant(
     except InvalidIdentityToken as exc:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré.") from exc
 
-    return CurrentTenant(user_id=uuid.UUID(claims.user_id), tenant_id=uuid.UUID(claims.tenant_id))
+    return CurrentTenant(
+        user_id=uuid.UUID(claims.user_id), tenant_id=uuid.UUID(claims.tenant_id), raw_token=credentials.credentials
+    )

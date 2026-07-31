@@ -68,5 +68,5 @@ classification pour l'instant** — pas de comportement différent entre
 - `GET/PATCH /tenant` couvre aussi le cas OAuth (sinon sans issue).
 
 **Négatives / à surveiller**
-- `team` et `enterprise` sont aujourd'hui identiques en comportement — ne pas laisser cette ambiguïté s'installer trop longtemps sans définition produit, ou la classification perd sa valeur.
+- `team` et `enterprise` sont aujourd'hui identiques en comportement — ne pas laisser cette ambiguïté s'installer trop longtemps sans définition produit, ou la classification perd sa valeur. *(Résolu par [ADR-0012](0012-creator-quota-by-account-type.md) : quota de créateurs, personal=1/team=10/enterprise=illimité.)*
 - Ce choix ne doit pas être confondu avec la délégation multi-utilisateurs (toujours différée) : documenté explicitement pour éviter la confusion la prochaine fois que ce sujet revient.

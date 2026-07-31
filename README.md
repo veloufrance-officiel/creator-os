@@ -76,7 +76,7 @@ une mise à jour du [`CHANGELOG.md`](CHANGELOG.md).
 
 - [x] **Sprint F0 — Foundation** : structure repo, documentation, CI/CD initial, Docker, sécurité documentée, tooling monorepo
 - [x] **Sprint F1 — Identity Service** : register (type de compte requis, [ADR-0011](docs/adr/0011-tenant-account-types.md)), login/refresh/logout, `/me`, `/tenant`, RBAC, audit log, OAuth Google (web + natif) et Apple (natif, prépare le déploiement mobile) — 38 tests
-- [x] **Sprint F2 — Creator Twin** : profil enrichi, agences multi-créateurs avec autorisation par créateur ([ADR-0010](docs/adr/0010-multi-creator-agency-tenants.md)), portfolios, blocs, publication, isolation tenant — 24 tests. Bio IA et upload média différés (dépendent de services futurs)
+- [x] **Sprint F2 — Creator Twin** : profil enrichi, agences multi-créateurs avec autorisation par créateur ([ADR-0010](docs/adr/0010-multi-creator-agency-tenants.md)), quota par type de compte ([ADR-0012](docs/adr/0012-creator-quota-by-account-type.md) : personal=1, team=10, enterprise=illimité), portfolios, blocs, publication, isolation tenant — 35 tests. Bio IA et upload média différés (dépendent de services futurs)
 - [ ] **Sprint F3** (prochain) : Media Engine, AI Core, Memory, Connectors, Billing, Quota
 
 Détail : [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md).

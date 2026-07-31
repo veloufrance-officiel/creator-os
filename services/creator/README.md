@@ -10,9 +10,10 @@ créateurs** avec autorisation par créateur (voir
 Aucune FK vers les tables `identity` (ADR-0009).
 
 **Statut** : Sprint F2 — implémenté et testé (créateurs multiples par
-tenant, autorisation, portfolios, blocs, publication, isolation tenant).
-24 tests. Bio IA, upload média réel, et délégation fine multi-utilisateurs
-différés (voir `SPEC.md`).
+tenant, autorisation, quota par type de compte ([ADR-0012](../../docs/adr/0012-creator-quota-by-account-type.md)),
+portfolios, blocs, publication, isolation tenant). 35 tests. Bio IA,
+upload média réel, et délégation fine multi-utilisateurs différés (voir
+`SPEC.md`).
 
 **Spécification complète** : [`SPEC.md`](SPEC.md).
 

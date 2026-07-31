@@ -1,9 +1,12 @@
-"""Logique métier — orchestre repository.py. Voir SPEC.md et ADR-0010 pour les règles."""
+"""Logique métier — orchestre repository.py. Voir SPEC.md et ADR-0010/0012 pour les règles."""
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import repository
+
+# Voir ADR-0012 : constante ici, pas dans identity — règle du domaine creator.
+CREATOR_QUOTA_BY_ACCOUNT_TYPE = {"personal": 1, "team": 10, "enterprise": None}  # None = illimité
 
 
 class NotFoundError(Exception):
@@ -14,7 +17,21 @@ class ConflictError(Exception):
     pass
 
 
-async def create_creator(db: AsyncSession, *, user_id: uuid.UUID, tenant_id: uuid.UUID, fields: dict):
+class QuotaExceededError(Exception):
+    pass
+
+
+async def create_creator(
+    db: AsyncSession, *, user_id: uuid.UUID, tenant_id: uuid.UUID, account_type: str | None, fields: dict
+):
+    if account_type is not None:  # None = identity injoignable, fail-open (ADR-0012)
+        quota = CREATOR_QUOTA_BY_ACCOUNT_TYPE.get(account_type)
+        if quota is not None:
+            current_count = len(await repository.list_creators_by_tenant(db, tenant_id))
+            if current_count >= quota:
+                raise QuotaExceededError(
+                    f"Quota de créateurs atteint pour un compte '{account_type}' ({quota} max)."
+                )
     creator = await repository.create_creator(db, user_id=user_id, tenant_id=tenant_id, fields=fields)
     await db.commit()
     return creator

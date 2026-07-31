@@ -5,6 +5,13 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
+### Ajouté — Quota de créateurs par type de compte (ADR-0012)
+
+- Définit team/enterprise (laissés neutres par ADR-0011) : `personal` = 1 créateur, `team` = 10, `enterprise` = illimité
+- Vérifié en temps réel via un appel à `GET /tenant` sur `identity` (token porteur transmis), pas via le JWT — évite jusqu'à 15 min de désynchronisation après un changement de palier
+- **Fail-open** si `identity` est injoignable : le quota est une règle produit, pas une frontière de sécurité, une panne d'un service ne doit pas bloquer l'autre
+- 11 nouveaux tests creator (35 au total)
+
 ### Ajouté — Type de compte à l'inscription (ADR-0011)
 
 - `Tenant.account_type` (`personal` | `team` | `enterprise`) — champ requis dans `POST /auth/register`, choix avant la fin de l'inscription

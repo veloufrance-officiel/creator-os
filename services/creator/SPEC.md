@@ -77,6 +77,14 @@ créateur désautorisé disparaît de `/public/portfolios/{slug}` même si
 son portfolio individuel reste `is_published`. L'agence garde un accès
 interne complet (lecture/écriture) à un créateur désautorisé.
 
+## Quota de créateurs par type de compte (ADR-0012)
+
+`personal` : 1 · `team` : 10 · `enterprise` : illimité. Vérifié à la
+création d'un créateur via un appel à `GET /tenant` sur `identity`
+(transmet le token porteur de l'appelant). **Fail-open** si `identity`
+est injoignable — le quota est une règle produit, pas une frontière de
+sécurité, une panne d'`identity` ne doit pas bloquer la création.
+
 **Différé** : quel utilisateur précis d'une agence multi-personnes peut
 gérer quel créateur (délégation fine). Dépend d'un flow d'invitation
 multi-utilisateurs côté `identity`, qui n'existe pas encore. D'ici là,
@@ -92,4 +100,7 @@ retourne 404 sur un portfolio non publié, un créateur désautorisé, ou
 un slug inexistant — jamais de distinction (pas de fuite d'information)
 · blocs créés/modifiés/réordonnés/supprimés · isolation tenant complète
 (créateurs, portfolios, désautorisation) · toutes les routes protégées
-rejettent une requête sans token ou avec un token invalide.
+rejettent une requête sans token ou avec un token invalide · quota
+respecté par palier (personal=1, team=10, enterprise=illimité),
+message d'erreur explicite, et non bloquant si `identity` est injoignable
+(fail-open, ADR-0012).

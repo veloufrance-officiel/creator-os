@@ -4,11 +4,17 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import repository, schemas, service
+from app import identity_client, repository, schemas, service
 from app.auth import CurrentTenant, require_tenant
+from app.config import settings
 from app.database import get_db
 
 router = APIRouter()
+
+
+async def get_account_type(current: CurrentTenant = Depends(require_tenant)) -> str | None:
+    """Surchargeable en test — voir ADR-0012 (appel réseau réel vers identity ici)."""
+    return await identity_client.fetch_account_type(current.raw_token, identity_base_url=settings.identity_base_url)
 
 
 def _block_to_response(block) -> schemas.BlockResponse:
@@ -46,11 +52,19 @@ def _creator_to_response(creator) -> schemas.CreatorResponse:
 async def create_creator(
     body: schemas.CreatorCreateRequest,
     current: CurrentTenant = Depends(require_tenant),
+    account_type: str | None = Depends(get_account_type),
     db: AsyncSession = Depends(get_db),
 ):
-    creator = await service.create_creator(
-        db, user_id=current.user_id, tenant_id=current.tenant_id, fields=body.model_dump()
-    )
+    try:
+        creator = await service.create_creator(
+            db,
+            user_id=current.user_id,
+            tenant_id=current.tenant_id,
+            account_type=account_type,
+            fields=body.model_dump(),
+        )
+    except service.QuotaExceededError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     return _creator_to_response(creator)
 
 
