@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     (celui d'uvicorn) importe déjà tout le reste (fastapi, sqlalchemy...)
     sans problème -- migrations rattachées à ce même environnement, connu
     pour fonctionner."""
-    cfg = Config("alembic.ini")
+    cfg = Config("migrations.cfg")
     command.upgrade(cfg, "head")
     yield
 

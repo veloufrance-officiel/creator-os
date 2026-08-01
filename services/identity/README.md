@@ -23,7 +23,7 @@ cd services/identity
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 cp ../../.env.example ../../.env   # si pas déjà fait à la racine
-alembic upgrade head               # nécessite Postgres, voir infrastructure/docker
+alembic -c migrations.cfg upgrade head   # nécessite Postgres, voir infrastructure/docker
 uvicorn app.main:app --reload
 ```
 
